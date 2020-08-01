@@ -1,17 +1,18 @@
 import os
+import winshell
 import requests
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import numpy as np
 import lxml.html
-import winshell
+
 
 Cpn_name = []
 job_name = []
 expired =[]
 salary = []
-number = []
+amount = []
 location = []
 fields = []
 benefit = []
@@ -42,10 +43,10 @@ for page in pages:
                     job_name_elem = job.find('span', class_='i-title').text
                     job_name.append(job_name_elem)
 
-                    href1 = job.find_all('a', class_='btn btn-apply-s m-width-100', href=True)
-                    for h in href1:
-                        b = h['href']
-                        page2 = requests.get("https://tuyencongnhan.vn" + b)
+                    # href2 = job.find_all('a', class_='btn btn-apply-s m-width-100', href=True)
+                    for link2 in job.find_all('a', class_='btn btn-apply-s m-width-100', href=True):
+                        href2 = link2['href']
+                        page2 = requests.get("https://tuyencongnhan.vn" + href2)
                         soup = BeautifulSoup(page2.content, 'html.parser')
                         results = soup.find(id='tab-job-detail')
                         doc = lxml.html.fromstring(page2.content)
@@ -60,8 +61,8 @@ for page in pages:
                         salary_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[2]/div[2]/p/text()')
                         salary.append(salary_elem)
 
-                        number_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[3]/div[2]/p/text()')
-                        number.append(number_elem)
+                        amount_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[3]/div[2]/p/text()')
+                        amount.append(amount_elem)
 
                         location_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[5]/div[2]/p/a/text()')
                         location.append(location_elem)
@@ -81,9 +82,10 @@ for page in pages:
                             profile_require.append(profile_require_elem)
 
                     df = pd.DataFrame(
-                    {'Company Name':Cpn_name, 'Job Name':job_name, 'Number':number, 'Expired':expired, 'Salary':salary, 'Location':location, 'Fields':fields, 'Benefit':benefit, 'Require':require, 'Profile_require':profile_require})
+                    {'Company Name':Cpn_name, 'Job Name':job_name, 'Amount':amount, 'Expired':expired, 'Salary':salary, 
+                    'Location':location, 'Fields':fields, 'Benefit':benefit, 'Require':require, 'Profile_require':profile_require})
                     # df.replace("(['\\n,\s+])", "", regex=True, inplace=True)
-                    df['Number'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Number']]
+                    df['Amount'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Amount']]
                     df['Expired'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Expired']]
                     df['Salary'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Salary']]
                     df.to_excel(os.path.join(winshell.desktop(), "Companies.xlsx"))

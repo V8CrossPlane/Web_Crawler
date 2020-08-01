@@ -1,3 +1,5 @@
+import os
+import winshell
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -6,9 +8,7 @@ import numpy as np
 import lxml.html
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-import winshell
 
-name = []
 job_name = []
 company_name = []
 salary = []
@@ -22,7 +22,7 @@ chrome_options.add_argument('--ignore-certificate-errors')
 chrome_options.add_argument('--incognito')
 driver = webdriver.Chrome(options=chrome_options)
 
-pages = np.arange(0, 31, 10)
+pages = np.arange(0, 111, 10)
 for page in pages:
     page = driver.get("https://vn.indeed.com/jobs?q=Công+Nhân&l=Hà+Nội&start=" + str(page))
     soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -30,12 +30,16 @@ for page in pages:
 
     elements = results.find_all('div', class_='clickcard')
     for elem in elements:
+        
+        company_elements = elem.find('span', class_='company')
+        if company_elements is None:
+            company_name.append('None')
+        else:
+            company_name.append(company_elements.text.strip())
 
         job_elements = elem.find('h2', class_='title').text.strip()
         job_name.append(job_elements)
 
-        company_elements = elem.find('span', class_='company').text.strip()
-        company_name.append(company_elements)
 
         salary_elements = elem.find('span', class_='salaryText')
         if salary_elements is None:
@@ -44,16 +48,22 @@ for page in pages:
             salary.append(salary_elements.text)
 
         date_elements = elem.find('span', class_='date').text
-        date.append(date_elements)
+        if date_elements is None:
+            date.append('None')
+        else:
+            date.append(date_elements)
 
         location_elements = elem.find(class_='location accessible-contrast-color-location')
         if location_elements is None:
-            Location.append("none")
+            Location.append('None')
         else:
             Location.append(location_elements.text)
 
         info_elements = elem.find('div', class_='summary').text
-        info.append(info_elements)
+        if info_elements is None:
+            info.append('None')
+        else:
+            info.append(info_elements)
 
     # hrefs_elements = driver.find_elements_by_css_selector('.turnstileLink')
     # for href in hrefs_elements:
