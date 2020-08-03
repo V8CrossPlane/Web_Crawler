@@ -4,23 +4,31 @@ from bs4 import BeautifulSoup
 import re
 import requests
 import pandas as pd
+from PandasModel import PandasModel
 import numpy as np
 import lxml.html
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
+class Ui_MainWindow(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        QtWidgets.QWidget.__init__(self, parent=None)
         MainWindow.setObjectName("Web Crawler")
         MainWindow.resize(1600, 900)
         MainWindow.setAutoFillBackground(True)
+        
+        vLayout = QtWidgets.QVBoxLayout(self)
+        hLayout = QtWidgets.QHBoxLayout()
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
         self.tableView = QtWidgets.QTableView(self.centralwidget)
         self.tableView.setGeometry(QtCore.QRect(0, 160, 1600, 800))
         self.tableView.setObjectName("tableView")
+        # vLayout.addWidget(self.tableView)
+        self.tableView.setSortingEnabled(True)
 
         self.CpnButton = QtWidgets.QPushButton(self.centralwidget)
         self.CpnButton.setGeometry(QtCore.QRect(20, 50, 170, 50))
@@ -65,7 +73,7 @@ class Ui_MainWindow(object):
         self.CpnButton_4.setText(_translate("MainWindow", "Export"))
 
 
-    def Profile(self, tableView):
+    def Profile(self):
         name = []
         desired = []
         wishes = []
@@ -80,7 +88,7 @@ class Ui_MainWindow(object):
         introduce = []
 
 
-        pages = np.arange(1, 11, 1)
+        pages = np.arange(1, 2, 1)
         for page in pages:
             page = requests.get("https://tuyencongnhan.vn/tim-ho-so?&page=" + str(page))
 
@@ -142,6 +150,8 @@ class Ui_MainWindow(object):
                     df = pd.DataFrame(
                             {"Name":name, "Gender":gender,"Birthday":birthday, "Location":location, "Experience":experience,
                             "Place want to work":work_place, "Introduce":introduce, "Desired Salary":salary, "Desired":desired, "Wishes":wishes})
+                    model = PandasModel(df)
+                    self.tableView.setModel(model)
                     df.to_excel(os.path.join(winshell.desktop(), "Profile.xlsx"))
 
     def Company(self):
@@ -157,7 +167,7 @@ class Ui_MainWindow(object):
         profile_require = []
 
 
-        pages = np.arange(1, 11, 1)
+        pages = np.arange(1, 2, 1)
         for page in pages:
             page = requests.get("https://tuyencongnhan.vn/tim-nha-tuyen-dung?keyword=&city_id=&career_id=" + str(page))
 
@@ -225,6 +235,8 @@ class Ui_MainWindow(object):
                             df['Amount'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Amount']]
                             df['Expired'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Expired']]
                             df['Salary'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Salary']]
+                            model = PandasModel(df)
+                            self.tableView.setModel(model)
                             df.to_excel(os.path.join(winshell.desktop(), "Companies.xlsx"))
 
 
@@ -241,7 +253,7 @@ class Ui_MainWindow(object):
         chrome_options.add_argument('--incognito')
         driver = webdriver.Chrome(options=chrome_options)
 
-        pages = np.arange(0, 111, 10)
+        pages = np.arange(0, 31, 10)
         for page in pages:
             page = driver.get("https://vn.indeed.com/jobs?q=Công+Nhân&l=Hà+Nội&start=" + str(page))
             soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -294,6 +306,8 @@ class Ui_MainWindow(object):
 
             df = pd.DataFrame(
                     {'Company': company_name, 'Job': job_name, 'Salary': salary, 'location': Location, 'Date': date, 'Info': info})
+            model = PandasModel(df)
+            self.tableView.setModel(model)
             df.to_excel(os.path.join(winshell.desktop(), "Indeed.xlsx"))
 
         driver.close()
@@ -303,6 +317,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
+    # ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
