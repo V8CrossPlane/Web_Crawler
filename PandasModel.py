@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 import pandas as pd
 
 class PandasModel(QtCore.QAbstractTableModel): 
-    def __init__(self, df = pd.DataFrame(), parent=None): 
+    def __init__(self, df, parent=None): 
         QtCore.QAbstractTableModel.__init__(self, parent=parent)
         self._df = df
 
