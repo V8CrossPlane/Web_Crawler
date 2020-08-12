@@ -12,14 +12,15 @@ from selenium.webdriver.chrome.options import Options
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(QtWidgets.QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, df = pd.DataFrame() ,parent=None):
         QtWidgets.QWidget.__init__(self, parent=None)
+        self.df = df
         MainWindow.setObjectName("Web Crawler")
         MainWindow.resize(1600, 900)
         MainWindow.setAutoFillBackground(True)
         
-        vLayout = QtWidgets.QVBoxLayout(self)
-        hLayout = QtWidgets.QHBoxLayout()
+        # vLayout = QtWidgets.QVBoxLayout(self)
+        # hLayout = QtWidgets.QHBoxLayout()
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -31,13 +32,13 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.tableView.setSortingEnabled(True)
 
         self.CpnButton = QtWidgets.QPushButton(self.centralwidget)
-        self.CpnButton.setGeometry(QtCore.QRect(20, 50, 170, 50))
+        self.CpnButton.setGeometry(QtCore.QRect(20, 50, 180, 50))
         self.CpnButton.setAutoFillBackground(True)
         self.CpnButton.setObjectName("CpnButton")
         self.CpnButton.clicked.connect(self.Company)
 
         self.CpnButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.CpnButton_2.setGeometry(QtCore.QRect(200, 50, 150, 50))
+        self.CpnButton_2.setGeometry(QtCore.QRect(210, 50, 150, 50))
         self.CpnButton_2.setObjectName("CpnButton_2")
         self.CpnButton_2.clicked.connect(self.Profile)
 
@@ -51,6 +52,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.CpnButton_4.setGeometry(QtCore.QRect(1400, 50, 150, 50))
         self.CpnButton_4.setAutoFillBackground(True)
         self.CpnButton_4.setObjectName("CpnButton_4")
+        self.CpnButton_4.clicked.connect(self.Export)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -67,9 +69,9 @@ class Ui_MainWindow(QtWidgets.QWidget):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Web Crawler"))
-        self.CpnButton.setText(_translate("MainWindow", "TCN_Companies"))
-        self.CpnButton_2.setText(_translate("MainWindow", "TCN_Frofiles"))
-        self.CpnButton_3.setText(_translate("MainWindow", "Indeed"))
+        self.CpnButton.setText(_translate("MainWindow", "Crawl TCN Companies"))
+        self.CpnButton_2.setText(_translate("MainWindow", "Crawl TCN Frofiles"))
+        self.CpnButton_3.setText(_translate("MainWindow", "Crawl Indeed.com"))
         self.CpnButton_4.setText(_translate("MainWindow", "Export"))
 
 
@@ -86,7 +88,6 @@ class Ui_MainWindow(QtWidgets.QWidget):
         updated = []
         experience = []
         introduce = []
-
 
         pages = np.arange(1, 2, 1)
         for page in pages:
@@ -145,14 +146,12 @@ class Ui_MainWindow(QtWidgets.QWidget):
 
                     wish_elem = doc.xpath('//*[@id="content"]/div[10]/div/div/text()')
                     wishes.append(wish_elem)
+        self.df = pd.DataFrame(
+            {"Name":name, "Gender":gender,"Birthday":birthday, "Location":location, "Experience":experience,
+            "Place want to work":work_place, "Introduce":introduce, "Desired Salary":salary, "Desired":desired, "Wishes":wishes})
+        model = PandasModel(self.df)
+        self.tableView.setModel(model)       
 
-
-                    df = pd.DataFrame(
-                            {"Name":name, "Gender":gender,"Birthday":birthday, "Location":location, "Experience":experience,
-                            "Place want to work":work_place, "Introduce":introduce, "Desired Salary":salary, "Desired":desired, "Wishes":wishes})
-                    model = PandasModel(df)
-                    self.tableView.setModel(model)
-                    df.to_excel(os.path.join(winshell.desktop(), "Profile.xlsx"))
 
     def Company(self):
         Cpn_name = []
@@ -228,16 +227,16 @@ class Ui_MainWindow(QtWidgets.QWidget):
                                     profile_require_elem = d.find('div', class_='content-job-detail yeu-cau-ho-so').get_text().strip()
                                     profile_require.append(profile_require_elem)
 
-                            df = pd.DataFrame(
-                            {'Company Name':Cpn_name, 'Job Name':job_name, 'Amount':amount, 'Expired':expired, 'Salary':salary, 
-                            'Location':location, 'Fields':fields, 'Benefit':benefit, 'Require':require, 'Profile_require':profile_require})
-                            # df.replace("(['\\n,\s+])", "", regex=True, inplace=True)
-                            df['Amount'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Amount']]
-                            df['Expired'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Expired']]
-                            df['Salary'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in df['Salary']]
-                            model = PandasModel(df)
-                            self.tableView.setModel(model)
-                            df.to_excel(os.path.join(winshell.desktop(), "Companies.xlsx"))
+        self.df = pd.DataFrame(
+            {'Company Name':Cpn_name, 'Job Name':job_name, 'Amount':amount, 'Expired':expired, 'Salary':salary, 
+            'Location':location, 'Fields':fields, 'Benefit':benefit, 'Require':require, 'Profile_require':profile_require})
+        # df.replace("(['\\n,\s+])", "", regex=True, inplace=True)
+        self.df['Amount'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in self.df['Amount']]
+        self.df['Expired'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in self.df['Expired']]
+        self.df['Salary'] = [re.sub(r"(['\\n,\s+])", "", str(x)) for x in self.df['Salary']]
+        model = PandasModel(self.df)
+        self.tableView.setModel(model)
+        # df.to_excel(os.path.join(winshell.desktop(), "Companies.xlsx"))
 
 
     def Indeed(self):
@@ -247,6 +246,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         date = []
         Location = []
         info = []
+        expired =[]
 
         chrome_options = Options()
         chrome_options.add_argument('--ignore-certificate-errors')
@@ -295,7 +295,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
                     info.append('None')
                 else:
                     info.append(info_elements)
-
+        driver.close()
             # hrefs_elements = driver.find_elements_by_css_selector('.turnstileLink')
             # for href in hrefs_elements:
             #     links = href.get_attribute('href')
@@ -303,14 +303,18 @@ class Ui_MainWindow(QtWidgets.QWidget):
             #     soup = BeautifulSoup(page2.content, 'html.parser')
             #     doc = lxml.html.fromstring(page2.content)
 
+        self.df = pd.DataFrame(
+                {'Company': company_name, 'Job': job_name, 'Salary': salary, 'location': Location, 'Date': date, 'Info': info})
+        model = PandasModel(self.df)
+        self.tableView.setModel(model)
+        # df.to_excel(os.path.join(winshell.desktop(), "Indeed.xlsx"))
 
-            df = pd.DataFrame(
-                    {'Company': company_name, 'Job': job_name, 'Salary': salary, 'location': Location, 'Date': date, 'Info': info})
-            model = PandasModel(df)
-            self.tableView.setModel(model)
-            df.to_excel(os.path.join(winshell.desktop(), "Indeed.xlsx"))
+               
 
-        driver.close()
+    def Export(self):
+        self.df.to_excel(os.path.join(winshell.desktop(), "Result.xlsx"))
+
+        
 
 if __name__ == "__main__":
     import sys
