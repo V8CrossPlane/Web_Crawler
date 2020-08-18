@@ -37,22 +37,22 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.CpnButton.setObjectName("CpnButton")
         self.CpnButton.clicked.connect(self.Company)
 
-        self.CpnButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.CpnButton_2.setGeometry(QtCore.QRect(210, 50, 150, 50))
-        self.CpnButton_2.setObjectName("CpnButton_2")
-        self.CpnButton_2.clicked.connect(self.Profile)
+        self.PrfButton = QtWidgets.QPushButton(self.centralwidget)
+        self.PrfButton.setGeometry(QtCore.QRect(210, 50, 150, 50))
+        self.PrfButton.setObjectName("PrfButton")
+        self.PrfButton.clicked.connect(self.Profile)
 
-        self.CpnButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.CpnButton_3.setGeometry(QtCore.QRect(390, 50, 150, 50))
-        self.CpnButton_3.setAutoFillBackground(True)
-        self.CpnButton_3.setObjectName("CpnButton_3")
-        self.CpnButton_3.clicked.connect(self.Indeed)
+        self.IndeedButton = QtWidgets.QPushButton(self.centralwidget)
+        self.IndeedButton.setGeometry(QtCore.QRect(390, 50, 150, 50))
+        self.IndeedButton.setAutoFillBackground(True)
+        self.IndeedButton.setObjectName("IndeedButton")
+        self.IndeedButton.clicked.connect(self.Indeed)
 
-        self.CpnButton_4 = QtWidgets.QPushButton(self.centralwidget)
-        self.CpnButton_4.setGeometry(QtCore.QRect(1400, 50, 150, 50))
-        self.CpnButton_4.setAutoFillBackground(True)
-        self.CpnButton_4.setObjectName("CpnButton_4")
-        self.CpnButton_4.clicked.connect(self.Export)
+        self.ExportButton = QtWidgets.QPushButton(self.centralwidget)
+        self.ExportButton.setGeometry(QtCore.QRect(1400, 50, 150, 50))
+        self.ExportButton.setAutoFillBackground(True)
+        self.ExportButton.setObjectName("ExportButton")
+        self.ExportButton.clicked.connect(self.Export)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
@@ -70,9 +70,9 @@ class Ui_MainWindow(QtWidgets.QWidget):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Web Crawler"))
         self.CpnButton.setText(_translate("MainWindow", "Crawl TCN Companies"))
-        self.CpnButton_2.setText(_translate("MainWindow", "Crawl TCN Frofiles"))
-        self.CpnButton_3.setText(_translate("MainWindow", "Crawl Indeed.com"))
-        self.CpnButton_4.setText(_translate("MainWindow", "Export"))
+        self.PrfButton.setText(_translate("MainWindow", "Crawl TCN Frofiles"))
+        self.IndeedButton.setText(_translate("MainWindow", "Crawl Indeed.com"))
+        self.ExportButton.setText(_translate("MainWindow", "Export"))
 
 
     def Profile(self):
@@ -89,7 +89,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         experience = []
         introduce = []
 
-        pages = np.arange(1, 2, 1)
+        pages = np.arange(1, 5, 1)
         for page in pages:
             page = requests.get("https://tuyencongnhan.vn/tim-ho-so?&page=" + str(page))
 
@@ -166,7 +166,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         profile_require = []
 
 
-        pages = np.arange(1, 2, 1)
+        pages = np.arange(1, 3, 1)
         for page in pages:
             page = requests.get("https://tuyencongnhan.vn/tim-nha-tuyen-dung?keyword=&city_id=&career_id=" + str(page))
 
@@ -174,15 +174,15 @@ class Ui_MainWindow(QtWidgets.QWidget):
             results = soup.find(id='search-job')
             doc = lxml.html.fromstring(page.content)
 
-            for links in soup.findAll('p', class_='job-title'):
-                a = links.findAll('a')
-                for link in a:
+            for hrefs in soup.findAll('p', class_='job-title'):
+                links = hrefs.findAll('a')
+                for link in links:
                     # hrefs = link.get('href')
                     href = link['href']
-                    # pages1 = np.arange(1, 6, 1)
-                    for p in pages:
-                        p = requests.get("https://tuyencongnhan.vn" + href + "?page=" + str(p))
-                        soup = BeautifulSoup(p.content, 'html.parser')
+                    pages1 = np.arange(1, 5, 1)
+                    for page1 in pages1:
+                        page1 = requests.get("https://tuyencongnhan.vn" + href + "?page=" + str(page1))
+                        soup = BeautifulSoup(page1.content, 'html.parser')
                         results = soup.find(id='pjax-employer-detail')
                         jobs = results.find_all('article', class_='job-available')
                         for job in jobs:
@@ -197,23 +197,23 @@ class Ui_MainWindow(QtWidgets.QWidget):
                                 results = soup.find(id='tab-job-detail')
                                 doc = lxml.html.fromstring(page2.content)
                                 
-                                Info = doc.xpath('//*[@id="tab-job-detail"]')[0]
-                                cpn_name_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[2]/div[5]/address/strong/a/text()')
+                                # Info = doc.xpath('//*[@id="tab-job-detail"]')[0]
+                                cpn_name_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[2]/div[5]/address/strong/a/text()')
                                 Cpn_name.append(cpn_name_elem)
 
-                                expired_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[1]/div[2]/p/text()')
+                                expired_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[1]/div[2]/p/text()')
                                 expired.append(expired_elem)
 
-                                salary_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[2]/div[2]/p/text()')
+                                salary_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[2]/div[2]/p/text()')
                                 salary.append(salary_elem)
 
-                                amount_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[3]/div[2]/p/text()')
+                                amount_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[3]/div[2]/p/text()')
                                 amount.append(amount_elem)
 
-                                location_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[5]/div[2]/p/a/text()')
+                                location_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[5]/div[2]/p/a/text()')
                                 location.append(location_elem)
 
-                                fields_elem = Info.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[6]/div[2]/p/a/text()')
+                                fields_elem = doc.xpath('//*[@id="tab-job-detail"]/div/div/div[1]/div/div[6]/div[2]/p/a/text()')
                                 fields.append(fields_elem)
 
                                 description = results.find_all('div', class_='col-xs-12 col-md-8 pull-right')
@@ -253,7 +253,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
         chrome_options.add_argument('--incognito')
         driver = webdriver.Chrome(options=chrome_options)
 
-        pages = np.arange(0, 31, 10)
+        pages = np.arange(0, 51, 10)
         for page in pages:
             page = driver.get("https://vn.indeed.com/jobs?q=Công+Nhân&l=Hà+Nội&start=" + str(page))
             soup = BeautifulSoup(driver.page_source, 'html.parser')
